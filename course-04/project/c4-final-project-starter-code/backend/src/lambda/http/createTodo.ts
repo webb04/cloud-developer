@@ -21,18 +21,19 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
   const itemId = uuid.v4()
   const userId = parseUserId(jwtToken)
-  
 
-  const item = await docClient.put({
-    TableName: process.env.TODOS_TABLE,
-    Item: {
+  const item = {
       todoId: itemId,
       userId: userId,
       name: newTodo.name,
       done: false,
       dueDate: newTodo.dueDate,
       createdAt: new Date().toISOString()
-    }
+  }
+  
+  await docClient.put({
+    TableName: process.env.TODOS_TABLE,
+    Item: item
   }).promise()
   
   return {
