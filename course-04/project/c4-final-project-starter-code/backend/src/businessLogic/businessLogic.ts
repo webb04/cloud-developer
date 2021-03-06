@@ -9,8 +9,8 @@ import * as uuid from 'uuid'
 const todosAccess = new TodosAccess()
 
 export async function getAllTodos(jwtToken: string): Promise<TodoItem[]> {
-    const userId = parseUserId(jwtToken)
-    return todosAccess.getAllTodos(userId)
+    const userId = parseUserId(jwtToken);
+    return todosAccess.getAllTodos(userId);
 }
 
 export async function createTodo(
@@ -27,7 +27,8 @@ export async function createTodo(
     name: createTodoRequest.name,
     done: false,
     dueDate: createTodoRequest.dueDate,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    attachmentUrl: ''
   })
 }
 
@@ -55,10 +56,10 @@ export async function deleteTodo(
     await todosAccess.deleteTodo(todoItem.todoId, todoItem.createdAt);
 }
 
-export async function setItemUrl(todoId: string, itemUrl: string, jwtToken: string): Promise<void> {
-    const userId = parseUserId(jwtToken);
-    const todoItem = await todosAccess.getTodoItem(todoId, userId);
-    todosAccess.setItemUrl(todoItem.todoId, todoItem.createdAt, itemUrl);
+export async function setItemUrl(jwtToken: string, todoId: string, uploadUrl: string): Promise<void> {
+  const userId = parseUserId(jwtToken);
+  const todoItem = await todosAccess.getTodoItem(todoId, userId);
+  await todosAccess.setItemUrl(todoItem.todoId, todoItem.createdAt, uploadUrl);
 }
 
 export async function getTodoItem(todoId: string, jwtToken: string): Promise<TodoItem> {

@@ -4,7 +4,10 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } f
 import * as AWS  from 'aws-sdk'
 import * as AWSXRay from 'aws-xray-sdk'
 import * as uuid from 'uuid';
-import { setItemUrl } from '../../businessLogic/businessLogic'
+// import { parseUserId } from '../../auth/utils';
+// import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+// import { TodoItem } from '../../models/TodoItem';
+import { setItemUrl } from '../../businessLogic/businessLogic';
 
 const bucketName = process.env.ATTACHMENTS_S3_BUCKET
 const urlExpiration = process.env.SIGNED_URL_EXPIRATION
@@ -25,14 +28,11 @@ function getUploadUrl(imageId: string) {
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
   const authorization = event.headers.Authorization;
-  const split = authorization.split(' ')
-  const jwtToken = split[1]
-
+  const split = authorization.split(' ');
+  const jwtToken = split[1];
   const id = uuid.v4();
-  setItemUrl(todoId, `https://${bucketName}.s3.amazonaws.com/${id}`, jwtToken);
-
-  const url = getUploadUrl(id)
-
+  const uploadUrl = getUploadUrl(id);
+  await setItemUrl(jwtToken, todoId, uploadUrl);
 
   return {
     statusCode: 200,
@@ -41,7 +41,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       "Access-Control-Allow-Credentials" : true // Required for cookies, authorization headers with HTTPS 
     },
     body: JSON.stringify({
-      uploadUrl: url
+      uploadUrl
     })
   }
 }

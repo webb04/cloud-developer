@@ -81,8 +81,8 @@ export class TodosAccess {
         const params = {
             TableName: this.todosTable,
             Key: {
-                "todoId": todoId,
-                "createdAt": createdAt
+                todoId: todoId,
+                createdAt: createdAt
             },
             ConditionExpression:
                 'todoId = :todoId and createdAt = :createdAt',
@@ -104,7 +104,7 @@ export class TodosAccess {
             },
             UpdateExpression: 'set attachmentUrl = :attachmentUrl',
             ExpressionAttributeValues: {
-                ':attachmentUrl': itemUrl
+                ':attachmentUrl': itemUrl.split('?')[0]
             },
             ReturnValues: 'UPDATED_NEW'
         }
