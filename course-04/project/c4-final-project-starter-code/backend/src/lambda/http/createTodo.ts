@@ -3,11 +3,7 @@ import 'source-map-support/register'
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 
 import { CreateTodoRequest } from '../../requests/CreateTodoRequest'
-import * as AWS  from 'aws-sdk'
-import * as AWSXRay from 'aws-xray-sdk'
-import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import { parseUserId } from '../../auth/utils'
-import * as uuid from 'uuid';
+import { createTodo } from '../../businessLogic/businessLogic'
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const authorization = event.headers.Authorization
@@ -15,27 +11,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const jwtToken = split[1]
 
   const newTodo: CreateTodoRequest = JSON.parse(event.body)
-  
-  const XAWS = AWSXRay.captureAWS(AWS)
-  const docClient: DocumentClient = new XAWS.DynamoDB.DocumentClient()
-
-  const itemId = uuid.v4()
-  const userId = parseUserId(jwtToken)
-
-  const item = {
-      todoId: itemId,
-      userId: userId,
-      name: newTodo.name,
-      done: false,
-      dueDate: newTodo.dueDate,
-      createdAt: new Date().toISOString()
-  }
-  
-  await docClient.put({
-    TableName: process.env.TODOS_TABLE,
-    Item: item
-  }).promise()
-  
+  const item = await createTodo(newTodo, jwtToken)
   return {
     statusCode: 200,
     headers: {
